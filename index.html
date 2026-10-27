@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="pt" data-theme="dark">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Toca da Capivara · descarregar vídeos</title>
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%8A%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Open+Sans:wght@400;600&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body data-view="landing">
+
+  
+  <!-- ============ ECRÃ INICIAL ============ -->
+
+  <section id="landing" aria-label="Início">
+    <div class="auth-chip" id="auth-chip">
+      <span id="who" class="who" hidden></span>
+      <button id="a-museum" class="chip-btn alt" type="button" hidden>Museu dos Vídeos</button>
+      <button id="a-logout" class="chip-btn alt" type="button" hidden>Sair</button>
+      <button id="a-login" class="chip-btn" type="button">Entrar / Criar conta</button>
+    </div>
+    <div class="band">
+      <div class="marquee" data-row="0"></div>
+    </div>
+    <div class="band mid">
+      <div class="marquee reverse" data-row="1"></div>
+      <div class="hero">
+        <h2>Toca da Capivara</h2>
+        <p>Descarrega os teus vídeos favoritos das redes sociais</p>
+        <button id="start" class="cta" type="button">Clica aqui para começar</button>
+      </div>
+    </div>
+    <div class="band">
+      <div class="marquee slow" data-row="2"></div>
+    </div>
+  </section>
+
+  <!-- ============ APLICAÇÃO ============ -->
+
+  <div id="app" hidden>
+    <header>
+      <h1 class="logo">Toca da Capivara</h1>
+
+      <div class="pill">
+        <button id="paste" class="arrow" type="button" aria-label="Colar link da área de transferência"
+          title="Colar link">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 9h9V4l9 8-9 8v-5H3z" fill="currentColor" />
+          </svg>
+        </button>
+        <input id="url" type="url" placeholder="Coloca aqui o teu link para começar" aria-label="Link do vídeo"
+          autocomplete="off" spellcheck="false">
+      </div>
+
+      <button id="menu-btn" class="burger" type="button" aria-label="Abrir configurações" aria-expanded="false"
+        aria-controls="menu">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+            fill="none" />
+        </svg>
+      </button>
+
+    </header>
+
+    <div id="msg" role="status"></div>
+
+    <main id="stage" class="stage">
+      <div class="left">
+        <div id="player">
+          <img id="thumb" alt="" referrerpolicy="no-referrer">
+          <div class="placeholder">
+            <svg viewBox="0 0 1000 563" preserveAspectRatio="none" aria-hidden="true">
+              <g fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+                <path d="M30 42 L140 56 L72 134 Z" />
+                <path d="M970 42 L860 56 L928 134 Z" />
+                <path d="M30 521 L140 507 L72 429 Z" />
+                <path d="M970 521 L860 507 L928 429 Z" />
+              </g>
+              <g stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+                <path d="M170 38H830" />
+                <path d="M170 525H830" />
+                <path d="M26 190V365" />
+                <path d="M974 190V365" />
+                <path d="M500 78V220" />
+                <path d="M500 343V485" />
+                <path d="M130 281H290" />
+                <path d="M710 281H870" />
+              </g>
+            </svg>
+            <span>O teu vídeo aparecerá aqui</span>
+          </div>
+        </div>
+        <div class="cap">
+          <div id="title"></div>
+          <div id="meta"></div>
+        </div>
+      </div>
+
+      <!-- painel lateral: aparece quando o vídeo é reconhecido -->
+      <aside id="card" data-state="choose" aria-live="polite" style="display:none">
+        <select id="quality" class="sr" aria-label="Qualidade" tabindex="-1"></select>
+
+        <section id="choose">
+          <h2 class="ttl">Definição</h2>
+          <div id="defs" class="opts"></div>
+          <h2 class="ttl">Tipo de Ficheiro</h2>
+          <div class="opts" id="types">
+            <button type="button" class="opt" data-type="mp4" aria-pressed="true">MP4</button>
+            <button type="button" class="opt" data-type="mp3" aria-pressed="false">MP3</button>
+          </div>
+          <button id="dl" class="big" type="button">Descarregar</button>
+        </section>
+
+        <section id="prog">
+          <h2 class="ttl">Descarga em Curso</h2>
+          <div class="track" role="progressbar" aria-label="Progresso da descarga" aria-valuemin="0" aria-valuemax="100"
+            aria-valuenow="0" id="track">
+            <div id="bar"></div>
+          </div>
+          <div id="pinfo"></div>
+          <div class="ctrl">
+            <button class="ghost" id="pause" type="button">Pausar</button>
+            <button class="ghost danger" id="stop" type="button">Parar</button>
+          </div>
+        </section>
+
+        <section id="done">
+          <h2 class="ttl">Descarga Concluída</h2>
+          <div class="checkpill" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </div>
+          <img id="dthumb" alt="" referrerpolicy="no-referrer">
+          <div id="dinfo"></div>
+          <div id="dsave"></div>
+        </section>
+      </aside>
+    </main>
+
+    <button id="back-home" type="button" aria-label="Voltar ao início" title="Voltar ao início">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 11.5 12 4l9 7.5M5.5 10v10h13V10" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <span>Voltar ao início</span>
+    </button>
+
+  </div>
+
+  <nav id="menu" aria-label="Configurações" hidden>
+    <div class="menu-head">
+      <button id="menu-close" class="burger sm" type="button" aria-label="Fechar configurações">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+            fill="none" />
+        </svg>
+      </button>
+      <span class="ttl">Configurações</span>
+    </div>
+    <button id="m-home" type="button">Início do Site</button>
+    <button id="m-museum" type="button">Museu dos Vídeos</button>
+    <button id="m-theme" type="button">Tema do Site: Escuro</button>
+    <button id="m-cookies" type="button" title="Ajuda no erro 403 do YouTube e quando o Instagram pede login">Cookies:
+      Nenhum</button>
+    <button id="m-faq" type="button">Dúvidas Frequentes</button>
+    <button id="m-tut" type="button">Tutorial</button>
+    <button id="m-about" type="button">Sobre o Site</button>
+    <button id="m-terms" type="button">Termos de Uso</button>
+    <button id="m-account" type="button">Entrar / Criar conta</button>
+  </nav>
+
+  <!-- ============ MUSEU DOS VÍDEOS ============ -->
+
+  <section id="museum" hidden aria-labelledby="mus-title">
+    <header class="mus-head">
+      <h1 class="logo">Toca da Capivara</h1>
+      <div class="mus-nav">
+        <button id="mus-app" class="chip-btn" type="button">Descarregar um vídeo</button>
+        <button id="mus-home" class="chip-btn alt" type="button">Início</button>
+        <button id="mus-menu-btn" class="burger" type="button" aria-label="Abrir configurações" aria-expanded="false"
+          aria-controls="menu">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+              fill="none" />
+          </svg>
+        </button>
+      </div>
+    </header>
+    <div class="mus-body">
+      <h2 id="mus-title" class="mus-title">Museu dos Vídeos </h2>
+      <p id="mus-sub" class="mus-sub"></p>
+      <div class="mus-tools">
+        <input id="mus-search" type="search" placeholder="Procurar no museu…" aria-label="Procurar no museu"
+          autocomplete="off">
+        <button id="mus-clear" class="ghost danger" type="button">Limpar museu</button>
+      </div>
+      <div id="mus-status" role="status"></div>
+      <div id="mus-grid"></div>
+    </div>
+  </section>
+
+  <dialog id="auth" aria-labelledby="auth-title">
+    <h2 class="ttl" id="auth-title">Conta</h2>
+    <div class="tabs" role="tablist">
+      <button type="button" class="opt" data-mode="login" aria-pressed="true">Entrar</button>
+      <button type="button" class="opt" data-mode="register" aria-pressed="false">Criar conta</button>
+    </div>
+    <p id="auth-note" class="auth-note"></p>
+    <form id="auth-form" autocomplete="on">
+      <label for="au-user">Nome de utilizador ou email</label>
+      <input id="au-user" name="username" type="text" autocomplete="username" required minlength="3" maxlength="64"
+        spellcheck="false">
+      <label for="au-pass">Palavra-passe</label>
+      <input id="au-pass" name="password" type="password" autocomplete="current-password" required minlength="6">
+      <div id="auth-err" role="alert"></div>
+      <button id="auth-go" class="big sm" type="submit">Entrar</button>
+    </form>
+    <button id="auth-close" class="linkish" type="button">Cancelar</button>
+  </dialog>
+
+  <small class="legal">Respeite os termos das plataformas e os direitos de autor. Aqui não incentivamos a venda nem o
+    uso em sites de pirataria; este site serve apenas para descarregar vídeos de que gosta.</small>
+  <small class="legal">© 2026 Toca da Capivara. Todos os direitos reservados.</small>
+
+
+  <dialog id="museum-player" aria-labelledby="pl-title">
+    <h2 class="ttl" id="pl-title"></h2>
+    <div id="pl-box"></div>
+    <p id="pl-err" role="alert" hidden></p>
+    <button id="pl-close" class="big sm" type="button">Fechar</button>
+  </dialog>
+
+  <dialog id="dlg" aria-labelledby="dlg-title">
+    <h2 class="ttl" id="dlg-title"></h2>
+    <div id="dlg-body"></div>
+    <button id="dlg-close" class="big sm" type="button">Fechar</button>
+  </dialog>
+
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const say = (t, err = false) => { $("msg").textContent = t; $("msg").className = err ? "err" : ""; };
+    const fmt = s => s ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}` : "";
+    const store = {
+      get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+      set(k, v) { try { localStorage.setItem(k, v); } catch { } },
+    };
+    /* -----------------------------------------------------------------*/
+    /* ---------- ecrã inicial: filas de mosaicos a deslizar ---------- */
+    /* -----------------------------------------------------------------*/
+    
+    const PAL = [["#ff7a59", "#7b2ff7"], ["#00c6ff", "#0072ff"], ["#f9d423", "#ff4e50"], ["#11998e", "#38ef7d"],
+    ["#fc466b", "#3f5efb"], ["#ff9a44", "#fc6076"], ["#4568dc", "#b06ab3"], ["#ee0979", "#ff6a00"],
+    ["#2193b0", "#6dd5ed"], ["#614385", "#516395"]];
+    const RATIOS = ["16/9", "16/9", "1/1", "16/9", "9/11", "16/9", "16/9"];
+    document.querySelectorAll(".marquee").forEach(el => {
+      const row = +el.dataset.row;
+      const set = Array.from({ length: 12 }, (_, i) => {
+        const [a, b] = PAL[(i * 3 + row * 4) % PAL.length];
+        return `<i class="tile" style="--a:${a};--b:${b};aspect-ratio:${RATIOS[(i + row * 2) % RATIOS.length]}"></i>`;
+      }).join("");
+      el.innerHTML = `<div class="set">${set}</div><div class="set" aria-hidden="true">${set}</div>`;
+    });
+
+    function show(view) {
+      document.body.dataset.view = view;
+      $("landing").hidden = view !== "landing";
+      $("app").hidden = view !== "app";
+      $("museum").hidden = view !== "museum";
+      // no museu, a opção do menu leva à parte de descarregar vídeos
+      $("m-museum").textContent = view === "museum" ? "Descarregar um vídeo" : "Museu dos Vídeos ";
+      if (view === "app") $("url").focus();
+      else closeMenu();
+    }
+    $("start").onclick = () => show("app");
+
+    /* --------------------------------------------*/
+    /* ---------- menu de configuracoes ---------- */
+    /* --------------------------------------------*/
+
+    const COOKIES = [["", "Nenhum"], ["firefox", "Firefox"], ["edge", "Edge"], ["chrome", "Chrome"]];
+    let browserVal = store.get("toca_browser") || "";
+    if (!COOKIES.some(c => c[0] === browserVal)) browserVal = "";
+    let theme = store.get("toca_theme") === "light" ? "light" : "dark";
+
+    function renderMenu() {
+      document.documentElement.dataset.theme = theme;
+      $("m-theme").textContent = "Tema do Site: " + (theme === "light" ? "Claro" : "Escuro");
+      $("m-cookies").textContent = "Cookies: " + COOKIES.find(c => c[0] === browserVal)[1];
+    }
+    renderMenu();
+    const menuBtns = () => [$("menu-btn"), $("mus-menu-btn")];
+    function openMenu(e) {
+      if (e) e.stopPropagation();
+      $("menu").hidden = false;
+      menuBtns().forEach(b => b.setAttribute("aria-expanded", "true"));
+      $("menu-close").focus();
+    }
+    function closeMenu() {
+      if ($("menu").hidden) return;
+      $("menu").hidden = true;
+      menuBtns().forEach(b => b.setAttribute("aria-expanded", "false"));
+    }
+    $("menu-btn").onclick = openMenu;
+    $("mus-menu-btn").onclick = openMenu;
+    $("menu-close").onclick = () => { closeMenu(); (document.body.dataset.view === "museum" ? $("mus-menu-btn") : $("menu-btn")).focus(); };
+    document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("menu").hidden) { closeMenu(); (document.body.dataset.view === "museum" ? $("mus-menu-btn") : $("menu-btn")).focus(); } });
+    document.addEventListener("click", e => {  // clicar fora fecha o menu
+      if (!$("menu").hidden && !e.target.closest("#menu, #menu-btn, #mus-menu-btn")) closeMenu();
+    });
+
+    $("m-home").onclick = () => show("landing");
+    $("back-home").onclick = () => show("landing");
+    $("m-theme").onclick = () => { theme = theme === "dark" ? "light" : "dark"; store.set("toca_theme", theme); renderMenu(); };
+    $("m-cookies").onclick = () => {
+      const i = COOKIES.findIndex(c => c[0] === browserVal);
+      browserVal = COOKIES[(i + 1) % COOKIES.length][0];
+      store.set("toca_browser", browserVal);
+      renderMenu();
+      if (urlOf($("url").value)) preview(true);
+    };
+
+    const PAGES = {
+      faq: ["Dúvidas Frequentes", `
+    <h3>O Instagram ou outro site pede login</h3>
+    <p>Abre o menu e carrega em <b>Cookies</b> até aparecer o navegador onde tens a conta aberta (o Firefox funciona melhor).</p>
+    <h3>O YouTube dá erro 403</h3>
+    <p>O YouTube bloqueou o pedido por momentos. Espera um minuto e tenta outra vez. Se continuar, o link pode estar restrito (privado, com idade mínima ou bloqueado no teu país).</p>
+    <h3>Só consigo descarregar até 720p</h3>
+    <p>Nem todos os vídeos têm qualidade superior disponível. Escolhe outra definição no painel da direita. Se a escolha não aparecer, o vídeo não a oferece.</p>
+    <h3>E as playlists e os carrosséis?</h3>
+    <p>Só é descarregado o primeiro item do link.</p>
+    <h3>Posso descarregar tudo?</h3>
+    <p>Usa apenas conteúdo que tens direito de descarregar e respeita os termos das plataformas.</p>`],
+      tut: ["Tutorial", `
+    <ol>
+      <li>Cola o link do vídeo na barra do topo (ou carrega na seta para colar o que copiaste).</li>
+      <li>Espera que o vídeo seja reconhecido: a miniatura aparece à esquerda.</li>
+      <li>No painel da direita escolhe a <b>Definição</b> e o <b>Tipo de Ficheiro</b> (MP4 para vídeo, MP3 para só áudio).</li>
+      <li>Carrega em <b>Descarregar</b>. Podes pausar ou parar a meio.</li>
+      <li>Quando terminar, o ficheiro é guardado pelo teu navegador.</li>
+    </ol>`],
+      terms: ["Termos de Uso", `
+    <p><small>Última atualização: 23 outubro de 2026</small></p>
+    <h3>1. Aceitação</h3>
+    <p>Ao usar a Toca da Capivara aceitas estes termos. Se não concordas, não uses o site.</p>
+    <h3>2. O que o site faz</h3>
+    <p>A Toca da Capivara é uma ferramenta que ajuda a descarregar vídeos e áudio de sites públicos. Não aloja, não vende e não é dona dos conteúdos de terceiros.</p>
+    <h3>3. Uso permitido</h3>
+    <p>Usa o site apenas para conteúdo que és autorizado a descarregar: os teus próprios vídeos, conteúdo de licença livre, ou cópia para uso estritamente pessoal nos casos em que a lei o permita.</p>
+    <h3>4. Uso proibido</h3>
+    <p>É proibido usar o site para vender, distribuir ou publicar conteúdo protegido sem autorização, para pirataria, para contornar proteções técnicas ou pagamentos, ou para violar os termos das plataformas de origem.</p>
+    <h3>5. Responsabilidade do utilizador</h3>
+    <p>Cada utilizador é o único responsável pelo que descarrega e pelo uso que faz dos ficheiros, incluindo o respeito pelos direitos de autor e direitos conexos.</p>
+    <h3>6. Conta e Museu dos Vídeos</h3>
+    <p>A conta é opcional. Manténs a tua palavra-passe em segredo e és responsável pela atividade da tua conta. Podes remover vídeos do museu, ou a conta, a qualquer momento.</p>
+    <h3>7. Sem garantias</h3>
+    <p>O site é fornecido "tal como está". Os sites de origem mudam com frequência e por isso algumas descargas podem falhar ou ficar indisponíveis, sem aviso.</p>
+    <h3>8. Limitação de responsabilidade</h3>
+    <p>Na medida permitida pela lei, a Toca da Capivara não se responsabiliza por danos resultantes do uso do site ou do uso indevido de conteúdos descarregados.</p>
+    <h3>9. Alterações</h3>
+    <p>Estes termos podem ser atualizados. O uso continuado do site depois de uma alteração significa que a aceitas.</p>
+    <h3>10. Lei aplicável</h3>
+    <p>Estes termos regem-se pela lei portuguesa, sem prejuízo dos direitos que a lei reconhece aos consumidores.</p>`],
+
+      about: ["Sobre o Site", `
+    <p>A Toca da Capivara corre no teu próprio computador e usa o yt-dlp para ler e descarregar vídeos do YouTube, Instagram, TikTok e de muitos outros sites.</p>
+    <p>Ficheiros: <code>main.py</code> (servidor), <code>index.html</code> (página), <code>style.css</code> (estilo) e <code>iniciar.bat</code>.</p>`],
+    };
+    function openPage(key) {
+      closeMenu();
+      $("dlg-title").textContent = PAGES[key][0];
+      $("dlg-body").innerHTML = PAGES[key][1];
+      $("dlg").showModal();
+    }
+    $("m-faq").onclick = () => openPage("faq");
+    $("m-tut").onclick = () => openPage("tut");
+    $("m-about").onclick = () => openPage("about");
+    $("m-terms").onclick = () => openPage("terms");
+    $("dlg-close").onclick = () => $("dlg").close();
+    $("dlg").addEventListener("click", e => { if (e.target === $("dlg")) $("dlg").close(); });
+
+    /* ------------------------------------------*/
+    /* ---------- ligação ao servidor ---------- */
+    /* ------------------------------------------*/
+
+    // aceita texto com o link lá dentro, tira pontuação final e exige um endereço com ponto
+    const urlOf = s => {
+      const u = ((s || "").match(/https?:\/\/[^\s<>"']+/) || [""])[0].replace(/[.,;:!?)\]}]+$/, "");
+      return /^https?:\/\/[^\s\/?#]+\.[a-z]{2,}/i.test(u) ? u : "";
+    };
+    const browserQs = () => browserVal ? "&browser=" + encodeURIComponent(browserVal) : "";
+
+    // Chama o backend e devolve JSON; se vier outra coisa, explica o problema
+    async function api(path, opts) {
+      const r = await fetch(path, opts);
+      const raw = await r.text();
+      let d;
+      try { d = JSON.parse(raw); }
+      catch { throw new Error(`O servidor respondeu "${raw.slice(0, 60)}" (HTTP ${r.status}). Isto não parece ser o servidor da Toca da Capivara: confirma que o uvicorn está a correr e que abriste o endereço certo.`); }
+      if (r.status === 404 && d.detail === "Not Found" && path.startsWith("/api/"))
+        throw new Error("O servidor que está a correr é uma versão antiga (não tem esta função). Fecha o iniciar.bat, abre o da pasta atualizada e confirma que http://127.0.0.1:8765/docs lista /api/register.");
+      if (!r.ok) throw new Error(typeof d.detail === "string" ? d.detail : "Dados inválidos.");
+      return d;
+    }
+    /* -------------------------------------*/
+    /* ---------- painel lateral ---------- */
+    /* -------------------------------------*/
+    const setState = s => { $("card").dataset.state = s; };
+    function hideCard() {
+      $("card").style.display = "none";
+      $("stage").classList.remove("has-video");
+      $("player").classList.remove("has-thumb");
+      $("title").textContent = $("meta").textContent = "";
+      setState("choose");
+    }
+
+    $("thumb").onerror = () => { $("player").classList.remove("has-thumb"); };  // miniatura bloqueada pelo site
+    $("dthumb").onerror = () => { $("dthumb").hidden = true; };
+
+    const defLabel = h => h + "p " + (h <= 720 ? "SD" : h <= 1080 ? "HD" : h <= 1440 ? "QHD" : "UHD");
+    let selH = "", selType = "mp4";
+    const currentQuality = () => selType === "mp3" ? "audio" : (selH || "best");
+    function syncOpts() {
+      $("quality").value = currentQuality();
+      $("defs").classList.toggle("off", selType === "mp3");
+      $("defs").querySelectorAll(".opt").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.h === selH)));
+      $("types").querySelectorAll(".opt").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.type === selType)));
+    }
+    function renderOpts(heights) {
+      $("quality").innerHTML = ["best", ...heights.map(String), "audio"]
+        .map(v => `<option value="${v}">${v}</option>`).join("");
+      selType = "mp4";
+      selH = heights.length ? String(heights[0]) : "";
+      $("defs").innerHTML = heights.length
+        ? heights.map(h => `<button type="button" class="opt" data-h="${h}">${defLabel(h)}</button>`).join("")
+        : `<button type="button" class="opt" data-h="">Melhor disponível</button>`;
+      syncOpts();
+    }
+    $("defs").addEventListener("click", e => {
+      const b = e.target.closest(".opt"); if (!b) return;
+      selH = b.dataset.h; selType = "mp4"; syncOpts();
+    });
+    $("types").addEventListener("click", e => {
+      const b = e.target.closest(".opt"); if (!b) return;
+      selType = b.dataset.type; syncOpts();
+    });
+
+    let previewSeq = 0, lastUrl = "", ctl = null, activeUrl = "";
+
+    // Reconhece o vídeo (título, miniatura, qualidades) assim que há um link no campo
+    async function preview(force = false) {
+      const url = urlOf($("url").value);
+      if (activeUrl) {  // descarga em curso: a página não muda
+        if (url && url !== activeUrl) {
+          $("url").value = activeUrl;
+          say("Há uma descarga em curso. Pausa ou pára antes de trocar de link.");
+        }
+        return;
+      }
+      if (!url) {
+        if (!$("url").value.trim()) {  // campo vazio: limpa tudo
+          previewSeq++; lastUrl = ""; if (ctl) ctl.abort();
+          hideCard(); say("");
+        }
+        return;  // texto sem link: não faz nada
+      }
+      if ($("url").value !== url) $("url").value = url;  // deixa só o link limpo no campo
+      if (!force && url === lastUrl) return;
+      lastUrl = url;
+      const seq = ++previewSeq;
+      if (ctl) ctl.abort();
+      ctl = new AbortController();
+      hideCard(); say("A reconhecer o vídeo…");
+      try {
+        const d = await api("/api/info?url=" + encodeURIComponent(url) + browserQs(), { signal: ctl.signal });
+        if (seq !== previewSeq) return;  // chegou tarde: já há um link mais recente
+        $("thumb").src = d.thumbnail || "";
+        $("dthumb").src = d.thumbnail || "";
+        $("dthumb").hidden = !d.thumbnail;
+        $("player").classList.toggle("has-thumb", !!d.thumbnail);
+        $("title").textContent = d.title || "Sem título";
+        $("meta").textContent = [d.site, d.uploader, fmt(d.duration)].filter(Boolean).join(" · ");
+        renderOpts(d.heights || []);
+        setState("choose");
+        $("stage").classList.add("has-video");
+        $("card").style.display = "block";
+        say(d.multiple ? "Este link tem vários itens; só o primeiro será descarregado." : "");
+      } catch (e) {
+        if (seq !== previewSeq || e.name === "AbortError") return;
+        lastUrl = "";  // deixa tentar outra vez com o mesmo link
+        say(e.message, true);
+      }
+    }
+
+    // Enter ou o botão da seta: pede sempre e explica se o link não serve
+    function explicitPreview() {
+      if (!$("url").value.trim()) return say("Cola primeiro um link.", true);
+      if (!urlOf($("url").value)) return say("Isto não parece um link válido (por exemplo https://www.youtube.com/...).", true);
+      preview(true);
+    }
+
+    $("url").addEventListener("input", e => {
+      if (!$("url").value.trim()) return preview();  // campo vazio: limpa
+      const typing = /^(insertText|insertCompositionText|delete)/.test(e.inputType || "") && !(e.data && e.data.length > 10);
+      if (!typing) preview();  // colar, arrastar ou preenchimento automático: reconhece logo
+    });
+    $("url").addEventListener("change", () => preview());  // escrever à mão: reconhece ao confirmar (sair do campo)
+    $("url").addEventListener("keydown", e => { if (e.key === "Enter") explicitPreview(); });
+
+    $("paste").onclick = async () => {
+      try { $("url").value = await navigator.clipboard.readText(); explicitPreview(); }
+      catch { say("Não consegui aceder à área de transferência. Cola manualmente (Ctrl+V).", true); }
+    };
+    /* -------------------------------*/
+    /* ---------- descarga ---------- */
+    /* -------------------------------*/
+    function setBar(pct, text, busy = false) {
+      $("bar").style.width = pct + "%";
+      $("bar").classList.toggle("busy", busy);
+      $("track").setAttribute("aria-valuenow", Math.round(pct));
+      $("pinfo").textContent = text;
+    }
+
+    let currentJob = null, paused = false, pausing = false, lastPct = 0;
+
+    function setCtrl(state) {
+      const off = state === "done";
+      $("pause").textContent = state === "paused" ? "Continuar" : "Pausar";
+      $("pause").disabled = off || state === "processing" || pausing;
+      $("stop").disabled = off;
+    }
+
+    $("pause").onclick = async () => {
+      if (!currentJob) return;
+      const resuming = paused;
+      $("pause").disabled = true;
+      try {
+        await api(`/api/${resuming ? "resume" : "pause"}/${currentJob}`, { method: "POST" });
+        if (!resuming) { pausing = true; setBar(lastPct, "A pausar…", true); }
+      } catch (e) { say(e.message, true); $("pause").disabled = false; }
+    };
+
+    $("stop").onclick = async () => {
+      if (!currentJob) return;
+      $("stop").disabled = true; $("pause").disabled = true;
+      try { await api(`/api/cancel/${currentJob}`, { method: "POST" }); setBar(lastPct, "A cancelar…", true); }
+      catch (e) { say(e.message, true); $("stop").disabled = false; }
+    };
+
+    $("dl").onclick = async () => {
+      const url = urlOf($("url").value), q = currentQuality();
+      const doneLabel = selType === "mp3" ? "MP3" : (selH ? defLabel(+selH) + " · MP4" : "MP4");
+      activeUrl = url;
+      $("dl").disabled = true; say("");
+      paused = pausing = false; lastPct = 0; setCtrl("starting");
+      setState("progress");
+      setBar(0, "A iniciar…", true);
+      try {
+        const { job } = await api(`/api/start?url=${encodeURIComponent(url)}&quality=${q}${browserQs()}`, { method: "POST" });
+        currentJob = job;
+        while (true) {
+          await new Promise(r => setTimeout(r, 700));
+          const p = await api(`/api/progress/${job}`);
+          if (p.state === "error") throw new Error(p.error);
+          if (p.state === "cancelled") { setState("choose"); say("Descarga cancelada."); break; }
+          if (p.state === "done") {
+            setBar(100, "Concluído. O ficheiro vai ser guardado.");
+            setCtrl("done");
+            $("dinfo").textContent = doneLabel;
+            $("dsave").textContent = me ? "Guardado no Museu dos Vídeos." : "Entra na tua conta para guardar no museu.";
+            setState("done");
+            window.location = `/api/file/${job}`;
+            break;
+          }
+          const pct = p.percent || 0; lastPct = pct;
+          paused = p.state === "paused";
+          if (paused) pausing = false;
+          if (paused) {
+            setBar(pct, `Em pausa · ${pct.toFixed(0)}%`);
+          } else if (pausing) {
+            setBar(pct, "A pausar…", true);
+          } else if (p.state === "processing") {
+            setBar(pct, "A juntar vídeo e áudio…", true);
+          } else if (p.state === "downloading") {
+            const parts = [pct.toFixed(0) + "%"];
+            if (p.speed) parts.push((p.speed / 1048576).toFixed(1) + " MB/s");
+            if (p.eta != null) parts.push("faltam " + fmt(p.eta));
+            setBar(pct, parts.join(" · "));
+          } else {
+            setBar(pct, "A iniciar…", true);
+          }
+          setCtrl(p.state);
+        }
+      } catch (e) { setState("choose"); say(e.message, true); }
+      currentJob = null; activeUrl = ""; paused = pausing = false;
+      $("dl").disabled = false;
+    };
+    /* -----------------------------*/
+    /* ---------- contas ---------- */
+    /* -----------------------------*/
+    let me = null, afterAuth = null, authMode = "login";
+    const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const post = (path, body) => api(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
+
+    function renderAuth() {
+      const on = !!me;
+      $("who").hidden = !on; $("a-museum").hidden = !on; $("a-logout").hidden = !on; $("a-login").hidden = on;
+      $("who").textContent = on ? "Olá, " + me.username : "";
+      $("m-account").textContent = on ? "Sair (" + me.username + ")" : "Entrar / Criar conta";
+    }
+    async function loadMe() {
+      try { me = (await api("/api/me")).user; } catch { me = null; }
+      renderAuth();
+    }
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      document.querySelectorAll("#auth .tabs .opt").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+      $("auth-go").textContent = mode === "login" ? "Entrar" : "Criar conta";
+      $("au-pass").autocomplete = mode === "login" ? "current-password" : "new-password";
+      $("auth-title").textContent = mode === "login" ? "Entrar" : "Criar conta";
+      $("auth-err").textContent = "";
+    }
+    function openAuth(mode = "login", note = "", then = null) {
+      closeMenu();
+      afterAuth = then;
+      setAuthMode(mode);
+      $("auth-note").textContent = note;
+      $("auth").showModal();
+      $("au-user").focus();
+    }
+    document.querySelectorAll("#auth .tabs .opt").forEach(b => b.onclick = () => setAuthMode(b.dataset.mode));
+    $("auth-close").onclick = () => $("auth").close();
+    $("auth").addEventListener("click", e => { if (e.target === $("auth")) $("auth").close(); });
+    $("auth-form").onsubmit = async e => {
+      e.preventDefault();
+      $("auth-err").textContent = "";
+      $("auth-go").disabled = true;
+      try {
+        const d = await post("/api/" + authMode, { username: $("au-user").value, password: $("au-pass").value });
+        me = d.user; $("au-pass").value = ""; $("auth").close(); renderAuth();
+        const next = afterAuth; afterAuth = null;
+        if (next) next();
+      } catch (err) { $("auth-err").textContent = err.message; }
+      $("auth-go").disabled = false;
+    };
+
+    async function logout() {
+      try { await post("/api/logout"); } catch { }
+      me = null; renderAuth(); closeMenu();
+      if (document.body.dataset.view === "museum") show("landing");
+    }
+    $("a-login").onclick = () => openAuth("login");
+    $("a-logout").onclick = logout;
+    $("m-account").onclick = () => me ? logout() : openAuth("login");
+
+    /* ------------------------------------------------*/
+    /* ---------- museu dos videos baixados ---------- */
+    /* ------------------------------------------------*/
+
+    let museumItems = [];
+    const itemLabel = it => it.kind === "audio" ? (it.ext === "mp3" ? "MP3" : "Áudio · " + (it.ext || "").toUpperCase())
+      : (it.height ? defLabel(it.height) + " · " : "") + (it.ext || "mp4").toUpperCase();
+
+    async function openMuseum() {
+      closeMenu();
+      if (!me) return openAuth("login", "Entra para ver o teu Museu dos Vídeos.", openMuseum);
+      show("museum");
+      await loadMuseum();
+    }
+    async function loadMuseum() {
+      $("mus-status").textContent = "A carregar…";
+      try {
+        museumItems = (await api("/api/history")).items;
+        $("mus-status").textContent = "";
+        renderMuseum();
+      } catch (e) {
+        if (/Entra na tua conta/.test(e.message)) { me = null; renderAuth(); show("landing"); return; }
+        $("mus-status").textContent = e.message;
+      }
+    }
+    function renderMuseum() {
+      const q = $("mus-search").value.trim().toLowerCase();
+      const list = museumItems.filter(it => !q || (it.title || "").toLowerCase().includes(q) || (it.uploader || "").toLowerCase().includes(q));
+      $("mus-sub").textContent = museumItems.length
+        ? `${museumItems.length} ${museumItems.length === 1 ? "vídeo guardado" : "vídeos guardados"} na conta de ${me.username}`
+        : `Conta de ${me.username}`;
+      $("mus-clear").hidden = !museumItems.length;
+      if (!list.length) {
+        $("mus-grid").innerHTML = `<p class="mus-empty">${museumItems.length ? "Nada encontrado para essa pesquisa."
+          : "O museu ainda está vazio. Descarrega um vídeo e ele aparece aqui, pronto a ver."}</p>`;
+        return;
+      }
+      $("mus-grid").innerHTML = list.map(it => {
+        const when = new Date(it.created * 1000).toLocaleString("pt-PT", { dateStyle: "medium", timeStyle: "short" });
+        const meta = [it.site, it.uploader, fmt(it.duration)].filter(Boolean).join(" · ");
+        const safeUrl = /^https?:\/\//i.test(it.url || "") ? it.url : "";
+        return `<article class="mus-card" data-id="${it.id}">
+      <div class="mus-frame">${it.thumbnail && /^https?:\/\//i.test(it.thumbnail) ? `<img src="${esc(it.thumbnail)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ""}
+        <span class="mus-badge">${esc(itemLabel(it))}</span></div>
+      <div class="mus-plaque">
+        <h3>${esc(it.title || "Sem título")}</h3>
+        <p class="mus-meta">${esc(meta)}</p>
+        <p class="mus-date">${esc(when)}</p>
+        <div class="mus-btns">
+          ${it.playable ? `<button type="button" data-act="play">▶ Ver</button>`
+            : safeUrl ? `<button type="button" data-act="save">Guardar para ver</button>` : ""}
+          ${safeUrl ? `<button type="button" data-act="again">Descarregar de novo</button>
+          <a href="${esc(safeUrl)}" target="_blank" rel="noopener noreferrer">Abrir link</a>` : ""}
+          <button type="button" data-act="del" class="danger">Remover</button>
+        </div>
+      </div></article>`;
+      }).join("");
+    }
+    $("mus-grid").addEventListener("error", e => { if (e.target.tagName === "IMG") e.target.remove(); }, true);
+    $("mus-grid").addEventListener("click", async e => {
+      const b = e.target.closest("button[data-act]"); if (!b) return;
+      const id = +b.closest(".mus-card").dataset.id;
+      const it = museumItems.find(x => x.id === id); if (!it) return;
+      if (b.dataset.act === "play") {
+        const tag = it.kind === "audio" ? "audio" : "video";
+        $("pl-title").textContent = it.title || "Sem título";
+        $("pl-err").hidden = true;
+        $("pl-box").innerHTML = `<${tag} controls autoplay preload="metadata" src="/api/watch/${it.id}"></${tag}>`;
+        $("museum-player").showModal();
+      } else if (b.dataset.act === "save") {
+        b.disabled = true; b.textContent = "A iniciar…";
+        try {
+          const { job } = await api(`/api/history/${id}/fetch` + (browserVal ? "?browser=" + encodeURIComponent(browserVal) : ""), { method: "POST" });
+          while (true) {
+            await new Promise(r => setTimeout(r, 1000));
+            const p = await api(`/api/progress/${job}`);
+            if (p.state === "error") throw new Error(p.error);
+            if (p.state === "cancelled") throw new Error("Cancelado.");
+            if (p.state === "done") { await loadMuseum(); return; }
+            b.textContent = p.state === "processing" ? "A processar…" : `A guardar… ${Math.round(p.percent || 0)}%`;
+          }
+        } catch (err) {
+          b.disabled = false; b.textContent = "Guardar para ver";
+          $("mus-status").textContent = err.message;
+        }
+      } else if (b.dataset.act === "again") {
+        $("url").value = it.url; show("app"); preview(true);
+      } else if (b.dataset.act === "del") {
+        try { await api("/api/history/" + id, { method: "DELETE" }); museumItems = museumItems.filter(x => x.id !== id); renderMuseum(); }
+        catch (err) { $("mus-status").textContent = err.message; }
+      }
+    });
+    $("mus-search").addEventListener("input", renderMuseum);
+    $("mus-clear").onclick = async () => {
+      if (!confirm("Apagar todos os vídeos do museu? Isto não apaga os ficheiros que já guardaste no teu computador.")) return;
+      try { await api("/api/history", { method: "DELETE" }); museumItems = []; renderMuseum(); }
+      catch (err) { $("mus-status").textContent = err.message; }
+    };
+    $("pl-box").addEventListener("error", () => {
+      $("pl-err").textContent = "Não foi possível reproduzir este vídeo no navegador (formato não suportado ou ficheiro ainda a ser preparado). Espera um minuto e tenta outra vez, ou usa o Chrome.";
+      $("pl-err").hidden = false;
+    }, true);
+    const stopPlayer = () => { $("pl-box").innerHTML = ""; $("pl-err").hidden = true; };  // pára o vídeo ao fechar
+    $("pl-close").onclick = () => $("museum-player").close();
+    $("museum-player").addEventListener("close", stopPlayer);
+    $("museum-player").addEventListener("click", e => { if (e.target === $("museum-player")) $("museum-player").close(); });
+    $("mus-home").onclick = () => show("landing");
+    $("mus-app").onclick = () => show("app");
+    $("a-museum").onclick = openMuseum;
+    $("m-museum").onclick = () => { if (document.body.dataset.view === "museum") { closeMenu(); show("app"); } else openMuseum(); };
+
+    loadMe();
+  </script>
+</body>
+
+</html>
